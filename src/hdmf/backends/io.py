@@ -32,8 +32,17 @@ class HDMFIO(with_metaclass(ABCMeta, object)):
         if all(len(v) == 0 for v in f_builder.values()):
             # TODO also check that the keys are appropriate. print a better error message
             raise UnsupportedOperation('Cannot build data. There are no values.')
-        container = self.__manager.construct(f_builder)
-        return container
+        try:
+            container = self.__manager.construct(f_builder)
+            return container
+        except ValueError as e:
+            if 'nwb_version' in f_builder and f_builder['nwb_version'].data[0] == '1':
+                raise Exception('file is version {} and is not supported by pynwb. See '
+                                'http://neurodatawithoutborders.github.io/api-python/ for help reading this file'
+                                ' (or just use h5py).'.
+                                format(f_builder['nwb_version'].data))
+            else:
+                raise e
 
     @docval({'name': 'container', 'type': Container, 'doc': 'the Container object to write'})
     def write(self, **kwargs):

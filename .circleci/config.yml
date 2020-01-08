@@ -289,6 +289,42 @@ jobs:
             cd pynwb
             python test.py -v
 
+  pynwb-stable-python37:
+    docker:
+      - image: circleci/python:3.7.0-stretch
+    steps:
+      - checkout
+      - run: git submodule sync
+      - run: git submodule update --init
+      - run:
+          <<: *initialize-venv
+      - run:
+          name: Install latest stable release of PyNWB and use this version of HDMF
+          command: |
+            . ../venv/bin/activate
+            curl --silent "https://api.github.com/repos/NeurodataWithoutBorders/pynwb/releases/latest" | \
+              grep '"browser_download_url":.*.tar.gz' | \
+              sed -E 's/.+: "(.+)"/\1/' | \
+              xargs curl -L > pynwb-release.tar.gz
+            tar -xzvf pynwb-release.tar.gz
+            cd pynwb-*
+            pip install -U -rrequirements-dev.txt -rrequirements.txt
+            pip check
+            python setup.py develop
+            cd ..
+            pip uninstall -y hdmf
+            python setup.py develop
+            pip show hdmf
+          # Install is expected to be quick. Increase timeout in case there are some network issues.
+          # While pip installing tox does not output by default. Circle thinks task is dead after 10 min.
+          no_output_timeout: 30m
+      - run:
+          name: Run the PyNWB tests
+          command: |
+            . ../venv/bin/activate
+            cd pynwb-*
+            python test.py -v
+
 workflows:
   version: 2
   test-package-publish:
@@ -346,6 +382,10 @@ workflows:
             branches:
               ignore: /.*/
       - pynwb-dev-python37:
+          filters:
+            branches:
+              ignore: dev
+      - pynwb-stable-python37:
           filters:
             branches:
               ignore: dev

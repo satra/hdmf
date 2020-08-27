@@ -195,6 +195,28 @@ class HDF5IO(HDMFIO):
         order.append(key)
 
     @classmethod
+    def get_namespace_versions(cls, file_obj):
+        """Return the namespaces and their versions in an HDF5 file.
+
+        :param file_obj: file containing the namespaces
+        :type file_obj: h5py.File
+        :return: dict mapping namespace name to a list of version strings of the namespace, in alphanumeric order
+        :rtype: dict
+        """
+        if SPEC_LOC_ATTR not in file_obj.attrs:
+            return dict()
+
+        spec_group = file_obj[file_obj.attrs[SPEC_LOC_ATTR]]
+        namespaces = list(spec_group.keys())
+
+        namespace_versions = dict()
+        for ns in namespaces:
+            ns_group = spec_group[ns]
+            version_names = list(ns_group.keys())
+            namespace_versions[ns] = version_names
+        return namespace_versions
+
+    @classmethod
     def __convert_namespace(cls, ns_catalog, namespace):
         ns = ns_catalog.get_namespace(namespace)
         builder = NamespaceBuilder(ns.doc, ns.name,

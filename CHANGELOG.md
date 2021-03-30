@@ -1,20 +1,47 @@
 # HDMF Changelog
 
-## HDMF 2.4.0 (Upcoming)
+## HDMF 2.5.0 (Upcoming)
+
+### New features
+- Add `HDF5IO.get_namespaces(path=path, file=file)` method which returns a dict of namespace name mapped to the
+  namespace version (the largest one if there are multiple) for each namespace cached in the given HDF5 file.
+  @rly (#527)
+- Add experimental namespace to HDMF common schema. New data types should go in the experimental namespace 
+  (hdmf-experimental) prior to being added to the core (hdmf-common) namespace. The purpose of this is to provide
+  a place to test new data types that may break backward compatibility as they are refined. @ajtritt (#545)
+
+- Add `EnumData` type for storing data that comes from a fixed set of values. This replaces `VocabData` i.e.
+  `VocabData` has been removed. `VocabData` stored vocabulary elements in an attribute, which has a size limit.
+  `EnumData` now stores elements in a separate dataset, referenced by an attribute stored on the `EnumData` dataset.
+  @ajtritt (#537)
 
 ### Internal improvements
-- Update CI. @rly (#432)
+- Update CI and copyright year. @rly (#523, #524)
 
 ### Bug fixes
-- Allow `np.bool_` as a valid `bool` dtype when validating. @dsleiter (#505)
+- Fix CI testing on Python 3.9. @rly (#523)
+- Fix certain edge cases where `GroupValidator` would not validate all of the child groups or datasets
+  attached to a `GroupBuilder`. @dsleiter (#526)
+
+## HDMF 2.4.0 (February 23, 2021)
 
 ### New features
 - `GroupValidator` now checks if child groups, datasets, and links have the correct quantity of elements and returns
   an `IncorrectQuantityError` for each mismatch. @dsleiter (#500)
 
+### Internal improvements
+- Update CI. @rly (#432)
+- Added  driver option for ros3. @bendichter (#506)
+
 ### Bug fixes
+- Allow `np.bool_` as a valid `bool` dtype when validating. @dsleiter (#505)
 - Fix building of Data objects where the spec has no dtype and the Data object value is a DataIO wrapping an
   AbstractDataChunkIterator. @rly (#512)
+- Fix TypeError when validating a group with an illegally-linked child.
+  @dsleiter (#515)
+- Fix `DynamicTable.get` for compound type columns. @rly (#518)
+- Fix and removed error "Field 'x' cannot be defined in y." when opening files with some extensions. @rly
+  (#519)
 
 ## HDMF 2.3.0 (December 8, 2020)
 
